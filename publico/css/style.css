@@ -1,0 +1,88 @@
+/* =========================================================
+   estilos.css — un solo archivo para todo el sitio
+   (así todas las pantallas tienen los mismos colores)
+   ========================================================= */
+
+:root {
+    --azul: #1f3a5f;        /* barra y botones principales */
+    --azul-claro: #2c5282;
+    --fondo: #f3f5f8;       /* fondo gris clarito */
+    --rojo: #c0392b;        /* errores y vencidos */
+    --verde: #2e7d32;       /* disponible / éxito */
+    --texto: #1d1d1d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+/* ---------- Barra de arriba ---------- */
+.barra {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--azul);
+    color: #fff;
+}
+.barra a { color: #fff; }
+
+.contenido { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+
+/* ---------- Login ---------- */
+.fondo-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.caja-login {
+    width: 100%;
+    max-width: 380px;
+    background: #fff;
+    padding: 28px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+.caja-login h1 { margin: 0; color: var(--azul); text-align: center; }
+.subtitulo { text-align: center; color: #555; margin-top: 6px; }
+
+label { display: block; margin-top: 14px; font-weight: 600; }
+
+input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px;
+    font-size: 16px;      /* 16px evita que el celular haga zoom */
+    border: 1px solid #c9ced6;
+    border-radius: 6px;
+}
+input.campo-error { border-color: var(--rojo); }
+
+.boton-principal {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 16px;
+    color: #fff;
+    background: var(--azul);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.boton-principal:hover { background: var(--azul-claro); }
+
+.nota { font-size: 13px; color: #666; text-align: center; margin-top: 16px; }
+
+/* ---------- Mensajes ---------- */
+.mensaje { padding: 10px 12px; border-radius: 6px; margin-top: 14px; }
+.mensaje-error { background: #fdecea; color: var(--rojo); border: 1px solid var(--rojo); }
+.mensaje-exito { background: #e8f5e9; color: var(--verde); border: 1px solid var(--verde); }
