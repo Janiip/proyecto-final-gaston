@@ -1,0 +1,11 @@
+# Claves reales: nunca se suben
+.env
+
+# Archivos del sistema operativo y editores
+.DS_Store  
+Thumbs.db  
+# .DS_Store y Thumbs.db son archivos generados por el sistema operativo. Se crean solos de forma oculta en las carpetas cuando abres el explorador de archivos.
+.vscode/
+.idea/
+# .vscode/ y .idea/: Son las carpetas de configuración personal de los editores de código(VS Code o PhpStorm). Guardan cosas tuyas de la compu (como qué pestañas tenías abiertas o tus extensiones), por lo que no deben subirse al repositorio del grupo
+
