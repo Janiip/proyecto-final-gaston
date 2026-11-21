@@ -2,7 +2,7 @@
 /**
  * vistas/login.php
  * ------------------------------------------------------------
- * Pantalla de inicio de sesión.
+ * Pantalla de inicio de sesión (mockup: login.png).
  * Solo muestra el formulario: la validación la hace
  * controladores/validar_login.php
  */
@@ -31,40 +31,64 @@ unset($_SESSION['identificador_previo']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ingresar | Pañol EEST N°1</title>
+    <title>Ingresar | TallerNet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../publico/css/estilos.css">
 </head>
-<body class="fondo-login">
+<body>
 
-    <main class="caja-login">
-        <h1>Pañol EEST N°1</h1>
-        <p class="subtitulo">Ingresá para ver y pedir herramientas</p>
+<div class="login">
 
-        <?php if ($error !== ''): ?>
-            <!-- Franja roja con el error (e() evita que se ejecute código raro) -->
-            <div class="mensaje mensaje-error"><?= e($error) ?></div>
-        <?php endif; ?>
+    <!-- Columna izquierda: logo y nombre del sistema -->
+    <section class="login-marca">
+        <img src="../publico/img/logo_eest.png" alt="Logo de la EEST N°1" class="login-logo">
+        <p class="login-nombre">TallerNet</p>
+        <p class="login-lema">gestor de herramientas</p>
+    </section>
 
-        <!-- El formulario manda los datos al controlador por POST
-             (POST: los datos no quedan a la vista en la barra de direcciones). -->
-        <form action="../controladores/validar_login.php" method="POST" novalidate>
+    <!-- Columna derecha: tarjeta blanca con el formulario -->
+    <section class="login-formulario">
+        <div class="login-tarjeta">
+            <h1>¡Bienvenido/a!</h1>
+            <p class="subtitulo">Ingresá tus datos para continuar.</p>
 
-            <label for="identificador">DNI o correo electrónico</label>
-            <input type="text" id="identificador" name="identificador"
-                   value="<?= e($identificador) ?>"
-                   placeholder="Ej: 45111222 o nombre@gmail.com"
-                   autocomplete="username" required>
+            <?php if ($error !== ''): ?>
+                <!-- Franja roja con el error (e() evita que se ejecute código raro) -->
+                <div class="mensaje mensaje-error"><?= e($error) ?></div>
+            <?php endif; ?>
 
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" name="password"
-                   autocomplete="current-password" required>
+            <!-- El formulario manda los datos al controlador por POST
+                 (POST: los datos no quedan a la vista en la barra de direcciones). -->
+            <form action="../controladores/validar_login.php" method="POST" novalidate>
 
-            <button type="submit" class="boton-principal">Ingresar</button>
-        </form>
+                <div class="campo">
+                    <label for="identificador">DNI o correo electrónico</label>
+                    <input type="text" id="identificador" name="identificador"
+                           value="<?= e($identificador) ?>"
+                           placeholder="Ingresá tu DNI o tu correo"
+                           autocomplete="username" required>
+                </div>
 
-        <p class="nota">¿Te olvidaste la contraseña? Pedile al pañolero que la restablezca.</p>
-    </main>
+                <div class="campo">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="Ingresá tu contraseña"
+                           autocomplete="current-password" required>
+                </div>
 
-    <script src="../publico/js/login.js"></script>
+                <button type="submit" class="boton boton-principal boton-ancho">Iniciar sesión</button>
+            </form>
+
+            <div class="login-enlaces">
+                ¿Es tu primer ingreso? Usá la contraseña que te dio el pañolero.<br>
+                <strong>¿Te olvidaste la contraseña? Pedile al pañolero que la restablezca.</strong>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script src="../publico/js/login.js"></script>
 </body>
 </html>

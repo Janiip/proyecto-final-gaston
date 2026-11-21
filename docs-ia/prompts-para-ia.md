@@ -9,3 +9,14 @@ Usamos gemini para crear prompts para Claude. Primero le pasamos el pdf asi no h
 * crea un código en PHP puro, súper simple y comentado paso a paso, con los nombres de archivos y carpetas en español, para arrancar la estructura del proyecto y una bdd en sql, explicalos para entender y poder defender. TODAVÍA NO HAGAS EL FRONT.
 * haz el front, tiene que basarse en el diseño de estos mockups y en la paleta del mismo. 
 * agrega un archivo (como dice en el pdf) `.env.example` y un cargador simple en PHP para leer las variables de entorno sin subir claves al repositorio como dice el pdf.
+
+
+# Uso de IA – Diseño y archivos PHP
+
+Se utilizó Inteligencia Artificial como herramienta de apoyo durante el desarrollo del proyecto.
+
+- **Diseño:** Para realizar modificaciones visuales y mejorar la presentación de las interfaces.
+- **Archivos PHP y JavaScript:** Para generar fragmentos de código y resolver dudas de programación.
+- **Documentación Word:** Para realizar consultas puntuales sobre el formato y la organización del documento.
+
+El contenido generado fue revisado y adaptado según las necesidades del proyecto.
