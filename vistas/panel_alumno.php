@@ -9,7 +9,7 @@
 
 require_once __DIR__ . '/../config/sesion.php';
 require_once __DIR__ . '/../config/conexion.php';
-require_once __DIR__ . '/../config/horario.php';
+require_once __DIR__ . '/../config/reglas_prestamos.php';
 exigir_rol('alumno');
 
 $pdo = conectar();
@@ -19,10 +19,10 @@ $id  = $_SESSION['usuario_id'];
  * Cuenta los préstamos del alumno que cumplen una condición extra.
  * Todas las consultas son preparadas: el id va aparte en execute().
  */
-function contar($pdo, $id, $condicion)
+function contar($pdo, $id, $condicion, $datos = [])
 {
     $consulta = $pdo->prepare("SELECT COUNT(*) FROM prestamos WHERE id_usuario = ? AND $condicion");
-    $consulta->execute([$id]);
+    $consulta->execute(array_merge([$id], $datos));
     return (int) $consulta->fetchColumn();
 }
 
@@ -30,7 +30,8 @@ function contar($pdo, $id, $condicion)
 $activos     = contar($pdo, $id, "estado = 'retirado'");
 $pendientes  = contar($pdo, $id, "estado = 'solicitado'");
 // Próximas: retiradas que hay que devolver hoy, mañana o que ya se vencieron
-$proximas    = contar($pdo, $id, "estado = 'retirado' AND fecha_devolucion_prevista <= DATE_ADD(CURDATE(), INTERVAL 1 DAY)");
+$manana      = date('Y-m-d', strtotime('+1 day'));
+$proximas    = contar($pdo, $id, "estado = 'retirado' AND fecha_devolucion_prevista <= ?", [$manana]);
 
 // Sus últimos 5 préstamos (el JOIN trae el nombre de la herramienta)
 $consulta = $pdo->prepare(
@@ -44,21 +45,12 @@ $consulta = $pdo->prepare(
 $consulta->execute([$id]);
 $ultimos = $consulta->fetchAll();
 
-// Alerta de cierre (RF11): lo que este alumno tiene que devolver hoy
-$para_devolver = [];
-if (alerta_de_cierre_activa() && $activos > 0) {
-    $consulta = $pdo->prepare(
-        "SELECT h.nombre, p.cantidad
-           FROM prestamos p JOIN herramientas h ON h.id = p.id_herramienta
-          WHERE p.id_usuario = ? AND p.estado = 'retirado'"
-    );
-    $consulta->execute([$id]);
-    $para_devolver = $consulta->fetchAll();
-}
+// Alerta de cierre (RF11): lo que este alumno tiene sin devolver (desde las 16:30)
+$para_devolver = datos_alerta_cierre($pdo, $id);
 
 $titulo = 'Inicio';
 $pagina_activa = 'panel_alumno.php';
-require __DIR__ . '/partes/inicio_pagina.php';
+require __DIR__ . '/inicio_pagina.php';
 ?>
 
 <div class="encabezado">
@@ -75,7 +67,7 @@ require __DIR__ . '/partes/inicio_pagina.php';
         <h2>El pañol cierra a las <?= HORA_CIERRE ?>. Tenés que devolver:</h2>
         <ul>
             <?php foreach ($para_devolver as $item): ?>
-                <li><?= e($item['nombre']) ?> (<?= (int) $item['cantidad'] ?>)</li>
+                <li><?= e($item['herramienta']) ?> (<?= (int) $item['cantidad'] ?>)</li>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -146,4 +138,4 @@ require __DIR__ . '/partes/inicio_pagina.php';
     </section>
 </div>
 
-<?php require __DIR__ . '/partes/fin_pagina.php'; ?>
+<?php require __DIR__ . '/fin_pagina.php'; ?>

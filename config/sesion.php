@@ -32,9 +32,12 @@ function exigir_rol($rol)
 {
     iniciar_sesion();
 
+    // Las direcciones empiezan con "../vistas/" para que funcionen
+    // tanto desde /vistas como desde /login-acciones (son carpetas hermanas).
+
     // Sin sesión: lo mandamos al login.
     if (!isset($_SESSION['usuario_id'])) {
-        header('Location: login.php');
+        header('Location: ../vistas/login.php');
         exit;
     }
 
@@ -46,17 +49,18 @@ function exigir_rol($rol)
 
     // Un alumno que no terminó el primer ingreso no puede usar el sistema.
     if ($rol === 'alumno' && empty($_SESSION['primer_ingreso_completo'])) {
-        header('Location: primer_ingreso.php');
+        header('Location: ../vistas/primer_ingreso.php');
         exit;
     }
 }
 
 /**
- * Devuelve la pantalla principal de cada rol (dentro de /vistas).
+ * Devuelve la pantalla principal de cada rol.
+ * Empieza con "../vistas/" para que sirva desde /vistas y desde /login-acciones.
  */
 function panel_segun_rol($rol)
 {
-    return $rol === 'panolero' ? 'panel_panolero.php' : 'panel_alumno.php';
+    return $rol === 'panolero' ? '../vistas/panel_panolero.php' : '../vistas/panel_alumno.php';
 }
 
 /**

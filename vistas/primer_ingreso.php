@@ -4,8 +4,8 @@
  * ------------------------------------------------------------
  * Primer ingreso del alumno (RF2). Usa el mismo diseño que el login,
  * porque todavía no puede usar el menú del sistema.
- * Paso 1: verificar el correo con el código (controladores/verificar_codigo.php)
- * Paso 2: elegir contraseña nueva (controladores/cambiar_password.php)
+ * Paso 1: verificar el correo con el código (login-acciones/verificar_codigo.php)
+ * Paso 2: elegir contraseña nueva (login-acciones/cambiar_password.php)
  */
 
 require_once __DIR__ . '/../config/sesion.php';
@@ -37,13 +37,13 @@ unset($_SESSION['error_form']);
     <title>Primer ingreso | TallerNet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../publico/css/estilos.css">
+    <link rel="stylesheet" href="../css/estilos.css">
 </head>
 <body>
 
 <div class="login">
     <section class="login-marca">
-        <img src="../publico/img/logo_eest.png" alt="Logo de la EEST N°1" class="login-logo">
+        <img src="../img/logo_eest.png" alt="Logo de la EEST N°1" class="login-logo">
         <p class="login-nombre">TallerNet</p>
         <p class="login-lema">gestor de herramientas</p>
     </section>
@@ -58,7 +58,7 @@ unset($_SESSION['error_form']);
                 <h1>Verificá tu correo</h1>
                 <p class="subtitulo">Te mandamos un código de 6 números al correo que cargó el pañolero.</p>
 
-                <form action="../controladores/verificar_codigo.php" method="POST">
+                <form action="../login-acciones/verificar_codigo.php" method="POST">
                     <div class="campo">
                         <label for="codigo">Código de verificación</label>
                         <input type="text" id="codigo" name="codigo" inputmode="numeric"
@@ -68,7 +68,7 @@ unset($_SESSION['error_form']);
                 </form>
 
                 <div class="login-enlaces">
-                    <a href="../controladores/verificar_codigo.php?reenviar=1">Reenviar código</a><br>
+                    <a href="../login-acciones/verificar_codigo.php?reenviar=1">Reenviar código</a><br>
                     Si el correo no es tuyo, avisale al pañolero.
                 </div>
 
@@ -76,7 +76,7 @@ unset($_SESSION['error_form']);
                 <h1>Elegí tu contraseña</h1>
                 <p class="subtitulo">Tiene que ser de 4 números y distinta de 1234.</p>
 
-                <form action="../controladores/cambiar_password.php" method="POST">
+                <form action="../login-acciones/cambiar_password.php" method="POST">
                     <div class="campo">
                         <label for="nueva">Contraseña nueva</label>
                         <input type="password" id="nueva" name="nueva" inputmode="numeric"
@@ -92,7 +92,7 @@ unset($_SESSION['error_form']);
             <?php endif; ?>
 
             <div class="login-enlaces">
-                <a href="../controladores/cerrar_sesion.php">Cerrar sesión</a>
+                <a href="../login-acciones/cerrar_sesion.php">Cerrar sesión</a>
             </div>
         </div>
     </section>

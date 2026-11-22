@@ -1,6 +1,6 @@
 <?php
 /**
- * controladores/validar_login.php
+ * login-acciones/validar_login.php
  * ------------------------------------------------------------
  * Recibe el formulario del login y decide:
  *   - si los datos están mal  -> vuelve al login con un error

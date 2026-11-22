@@ -1,6 +1,6 @@
 <?php
 /**
- * controladores/cerrar_sesion.php
+ * login-acciones/cerrar_sesion.php
  * ------------------------------------------------------------
  * Borra la sesión y vuelve al login.
  */

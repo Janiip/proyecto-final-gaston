@@ -5,12 +5,12 @@
  * Gestión de préstamos (mockup: panel pañolero).
  * Tarjetas con números, alerta de cierre y solicitudes recientes.
  * Los botones Aprobar / Rechazar / Registrar devolución mandan
- * el pedido a controladores/cambiar_estado.php (parte de Jana).
+ * el pedido a login-acciones/cambiar_estado.php.
  */
 
 require_once __DIR__ . '/../config/sesion.php';
 require_once __DIR__ . '/../config/conexion.php';
-require_once __DIR__ . '/../config/horario.php';
+require_once __DIR__ . '/../config/reglas_prestamos.php';
 exigir_rol('panolero');
 
 $pdo = conectar();
@@ -18,7 +18,9 @@ $pdo = conectar();
 // Tarjetas: acá no hay datos del usuario, así que alcanza con query()
 $pendientes = (int) $pdo->query("SELECT COUNT(*) FROM prestamos WHERE estado = 'solicitado'")->fetchColumn();
 $activos    = (int) $pdo->query("SELECT COUNT(*) FROM prestamos WHERE estado = 'retirado'")->fetchColumn();
-$hoy        = (int) $pdo->query("SELECT COUNT(*) FROM prestamos WHERE estado = 'retirado' AND fecha_devolucion_prevista = CURDATE()")->fetchColumn();
+$consulta   = $pdo->prepare("SELECT COUNT(*) FROM prestamos WHERE estado = 'retirado' AND fecha_devolucion_prevista = ?");
+$consulta->execute([hoy()]);
+$hoy        = (int) $consulta->fetchColumn();
 
 // Solicitudes y préstamos que todavía necesitan algo del pañolero
 $solicitudes = $pdo->query(
@@ -31,19 +33,17 @@ $solicitudes = $pdo->query(
       ORDER BY p.fecha_pedido DESC"
 )->fetchAll();
 
-// Alerta de cierre (RF11): todo lo retirado, junto
-$para_devolver = [];
-if (alerta_de_cierre_activa()) {
-    foreach ($solicitudes as $s) {
-        if ($s['estado'] === 'retirado') {
-            $para_devolver[] = $s;
-        }
-    }
-}
+// Alerta de cierre (RF11): todo lo retirado de todos los alumnos (desde las 16:30)
+$para_devolver = datos_alerta_cierre($pdo);
+
+// Mensaje que deja login-acciones/cambiar_estado.php después de una acción
+$error = isset($_SESSION['error_form']) ? $_SESSION['error_form'] : '';
+$exito = isset($_SESSION['exito_form']) ? $_SESSION['exito_form'] : '';
+unset($_SESSION['error_form'], $_SESSION['exito_form']);
 
 $titulo = 'Gestión de préstamos';
 $pagina_activa = 'panel_panolero.php';
-require __DIR__ . '/partes/inicio_pagina.php';
+require __DIR__ . '/inicio_pagina.php';
 ?>
 
 <div class="encabezado">
@@ -55,12 +55,15 @@ require __DIR__ . '/partes/inicio_pagina.php';
     <a href="registrar_prestamo.php" class="boton boton-principal">+ Registrar préstamo</a>
 </div>
 
+<?php if ($error): ?><div class="mensaje mensaje-error"><?= e($error) ?></div><?php endif; ?>
+<?php if ($exito): ?><div class="mensaje mensaje-exito"><?= e($exito) ?></div><?php endif; ?>
+
 <?php if ($para_devolver): ?>
     <div class="aviso-cierre">
         <h2>Faltan devolver antes del cierre (<?= HORA_CIERRE ?>)</h2>
         <ul>
             <?php foreach ($para_devolver as $s): ?>
-                <li><?= e($s['herramienta']) ?> (<?= (int) $s['cantidad'] ?>) — <?= e($s['nombre'] . ' ' . $s['apellido']) ?></li>
+                <li><?= e($s['herramienta']) ?> (<?= (int) $s['cantidad'] ?>) — <?= e($s['nombre'] . ' ' . $s['apellido']) ?> · <?= e($s['curso']) ?></li>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -100,7 +103,7 @@ require __DIR__ . '/partes/inicio_pagina.php';
                 <?php endif; ?>
 
                 <?php foreach ($solicitudes as $s): ?>
-                    <?php $vencido = $s['estado'] === 'retirado' && $s['fecha_devolucion_prevista'] < date('Y-m-d'); ?>
+                    <?php $vencido = esta_vencido($s['estado'], $s['fecha_devolucion_prevista']); ?>
                     <tr class="<?= $vencido ? 'fila-vencida' : '' ?>">
                         <td><?= e($s['nombre'] . ' ' . $s['apellido']) ?></td>
                         <td><?= e($s['herramienta']) ?></td>
@@ -114,7 +117,7 @@ require __DIR__ . '/partes/inicio_pagina.php';
                         </td>
                         <td>
                             <!-- Cada botón es un formulario chiquito que manda el id y la acción -->
-                            <form action="../controladores/cambiar_estado.php" method="POST" class="acciones">
+                            <form action="../login-acciones/cambiar_estado.php" method="POST" class="acciones">
                                 <input type="hidden" name="id_prestamo" value="<?= (int) $s['id'] ?>">
                                 <?php if ($s['estado'] === 'solicitado'): ?>
                                     <button name="accion" value="aprobar" class="boton boton-principal boton-chico">Aprobar</button>
@@ -131,4 +134,4 @@ require __DIR__ . '/partes/inicio_pagina.php';
     </div>
 </section>
 
-<?php require __DIR__ . '/partes/fin_pagina.php'; ?>
+<?php require __DIR__ . '/fin_pagina.php'; ?>

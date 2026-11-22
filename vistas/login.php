@@ -4,7 +4,7 @@
  * ------------------------------------------------------------
  * Pantalla de inicio de sesión (mockup: login.png).
  * Solo muestra el formulario: la validación la hace
- * controladores/validar_login.php
+ * login-acciones/validar_login.php
  */
 
 require_once __DIR__ . '/../config/sesion.php';
@@ -34,7 +34,7 @@ unset($_SESSION['identificador_previo']);
     <title>Ingresar | TallerNet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../publico/css/estilos.css">
+    <link rel="stylesheet" href="../css/estilos.css">
 </head>
 <body>
 
@@ -42,7 +42,7 @@ unset($_SESSION['identificador_previo']);
 
     <!-- Columna izquierda: logo y nombre del sistema -->
     <section class="login-marca">
-        <img src="../publico/img/logo_eest.png" alt="Logo de la EEST N°1" class="login-logo">
+        <img src="../img/logo_eest.png" alt="Logo de la EEST N°1" class="login-logo">
         <p class="login-nombre">TallerNet</p>
         <p class="login-lema">gestor de herramientas</p>
     </section>
@@ -60,7 +60,7 @@ unset($_SESSION['identificador_previo']);
 
             <!-- El formulario manda los datos al controlador por POST
                  (POST: los datos no quedan a la vista en la barra de direcciones). -->
-            <form action="../controladores/validar_login.php" method="POST" novalidate>
+            <form action="../login-acciones/validar_login.php" method="POST" novalidate>
 
                 <div class="campo">
                     <label for="identificador">DNI o correo electrónico</label>
@@ -89,6 +89,6 @@ unset($_SESSION['identificador_previo']);
 
 </div>
 
-<script src="../publico/js/login.js"></script>
+<script src="../js/login.js"></script>
 </body>
 </html>
