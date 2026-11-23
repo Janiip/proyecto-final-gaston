@@ -11,12 +11,4 @@ Usamos gemini para crear prompts para Claude. Primero le pasamos el pdf asi no h
 * agrega un archivo (como dice en el pdf) `.env.example` y un cargador simple en PHP para leer las variables de entorno sin subir claves al repositorio como dice el pdf.
 
 
-# Uso de IA – Diseño y archivos PHP
 
-Se utilizó Inteligencia Artificial como herramienta de apoyo durante el desarrollo del proyecto.
-
-- **Diseño:** Para realizar modificaciones visuales y mejorar la presentación de las interfaces.
-- **Archivos PHP y JavaScript:** Para generar fragmentos de código y resolver dudas de programación.
-- **Documentación Word:** Para realizar consultas puntuales sobre el formato y la organización del documento.
-
-El contenido generado fue revisado y adaptado según las necesidades del proyecto.

@@ -43,7 +43,7 @@ unset($_SESSION['error_form']);
 
 <div class="login">
     <section class="login-marca">
-        <img src="../img/logo_eest.png" alt="Logo de la EEST N°1" class="login-logo">
+        <img src="../img/logo_eestn1.png" alt="Logo de la EEST N°1" class="login-logo">
         <p class="login-nombre">TallerNet</p>
         <p class="login-lema">gestor de herramientas</p>
     </section>
