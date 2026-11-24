@@ -6,7 +6,7 @@ Usamos **Claude** como compañero de estudio durante todo el proyecto: para orde
 
 ### 1. Planificación y documentación (Etapas 1 y 2)
 
-Le pasamos el PDF de la consigna y le pedimos ayuda para definir el problema, los requerimientos, las historias de usuario, el modelo de datos y las pantallas. Las reglas del pañol las decidimos nosotras: el horario de 7:20 a 17:30, la justificación fuera de horario, la alerta de las 16:30, el login con DNI y el primer ingreso con verificación del correo. La IA las fue sumando al documento y nos marcaba cuando algo contradecía otra parte. También armamos con ella el Diagrama de Gantt.
+Le pasamos el PDF de la consigna y le pedimos ayuda para definir el problema, los requerimientos, las historias de usuario, el modelo de datos y las pantallas. Las reglas del pañol las decidimos nosotras: el horario de 7:20 a 17:30, la justificación fuera de horario, la alerta de las 16:30, el login con DNI y el primer ingreso con verificación del correo. La IA las fue sumando al documento y nos marcaba cuando algo contradecía otra parte.
 
 ### 2. Base de datos y estructura
 
