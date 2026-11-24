@@ -215,10 +215,24 @@ function aprobar_prestamo($pdo, $id_prestamo, $ahora = null)
 
         $pdo->commit(); // guardamos los dos cambios juntos
 
-        // (Acá Daisy engancha el mail "retiraste la herramienta" del Menú A.
-        //  Va DESPUÉS del commit: si el mail falla, el préstamo ya quedó guardado.)
+        // PASO 4 (Menú A): avisamos al alumno por mail.
+        // Va DESPUÉS del commit: si el mail falla, el préstamo ya quedó guardado.
+        // El try propio hace que, pase lo que pase con el mail,
+        // el pañolero vea "entregada" (porque ya está guardada).
+        require_once __DIR__ . '/avisos.php';
+        try {
+            $aviso = avisar_retiro($pdo, $id_prestamo);
+        } catch (Exception $e) {
+            error_log('Error en el aviso de retiro: ' . $e->getMessage());
+            $aviso = ['ok' => false, 'error' => 'error inesperado'];
+        }
 
-        return ['ok' => true, 'mensaje' => 'Herramienta entregada: ' . $p['herramienta'] . '.'];
+        $mensaje = 'Herramienta entregada: ' . $p['herramienta'] . '.';
+        $mensaje .= $aviso['ok']
+            ? ' Se le avisó por mail al alumno.'
+            : ' Atención: no se pudo enviar el mail al alumno. ' . $aviso['error'];
+
+        return ['ok' => true, 'mensaje' => $mensaje];
 
     } catch (PDOException $e) {
         if ($pdo->inTransaction()) {
@@ -320,4 +334,151 @@ function devolver_prestamo($pdo, $id_prestamo, $ahora = null)
         error_log('Error al devolver préstamo: ' . $e->getMessage());
         return ['ok' => false, 'mensaje' => 'No se pudo registrar la devolución. Probá de nuevo.'];
     }
+}
+
+// =====================================================================
+// 5. VALIDACIÓN DE UN PEDIDO (la usan el alumno y el pañolero)
+// =====================================================================
+
+/**
+ * Revisa todas las reglas de un pedido nuevo. La usan:
+ *   - login-acciones/guardar_solicitud.php        (el alumno pide)
+ *   - login-acciones/guardar_prestamo_directo.php (el pañolero registra)
+ * Así las dos formas de pedir siguen EXACTAMENTE las mismas reglas.
+ *
+ * @param array $datos id_herramienta, cantidad, fecha_devolucion_prevista, justificacion
+ * @return array ['error' => texto o null, 'herramienta' => fila, 'justificacion' => texto o null]
+ */
+function validar_pedido($pdo, $id_usuario, $datos, $ahora = null)
+{
+    require_once __DIR__ . '/validaciones.php';
+
+    $id_herramienta = (int) $datos['id_herramienta'];
+    $cantidad       = (int) $datos['cantidad'];
+    $fecha          = trim($datos['fecha_devolucion_prevista']);
+    $justificacion  = trim($datos['justificacion']);
+
+    $error = function ($texto) {
+        return ['error' => $texto, 'herramienta' => null, 'justificacion' => null];
+    };
+
+    // 1. Bloqueo por deuda (RF14): si debe algo, no seguimos.
+    if (alumno_tiene_deuda($pdo, $id_usuario, $ahora)) {
+        return $error('El alumno tiene una herramienta vencida. Tiene que devolverla para poder pedir otra.');
+    }
+
+    // 2. Datos básicos
+    if ($id_herramienta <= 0) {
+        return $error('Elegí una herramienta.');
+    }
+    if ($cantidad < 1) {
+        return $error('La cantidad tiene que ser 1 o más.');
+    }
+    if (!es_fecha_valida($fecha)) {
+        return $error('La fecha de devolución no es válida.');
+    }
+    if ($fecha < hoy($ahora)) { // las fechas AAAA-MM-DD se comparan como texto
+        return $error('La fecha de devolución no puede ser anterior a hoy.');
+    }
+
+    // 3. Horario (RF5): fuera de horario, justificación obligatoria.
+    if (fuera_de_horario($ahora)) {
+        if (mb_strlen($justificacion, 'UTF-8') < 10) {
+            return $error('Es fuera de horario: hay que explicar por qué y para qué se necesita (al menos 10 letras).');
+        }
+    } else {
+        $justificacion = null; // en horario no se guarda
+    }
+
+    // 4. La herramienta existe, está activa y alcanza el stock.
+    $consulta = $pdo->prepare("SELECT id, nombre, cantidad_disponible FROM herramientas WHERE id = ? AND activa = 1");
+    $consulta->execute([$id_herramienta]);
+    $herramienta = $consulta->fetch();
+
+    if (!$herramienta) {
+        return $error('Esa herramienta no existe o fue dada de baja.');
+    }
+    if ($cantidad > (int) $herramienta['cantidad_disponible']) {
+        return $error('No hay suficientes unidades disponibles (quedan ' . (int) $herramienta['cantidad_disponible'] . ').');
+    }
+
+    return ['error' => null, 'herramienta' => $herramienta, 'justificacion' => $justificacion];
+}
+
+// =====================================================================
+// 6. PRÉSTAMO DIRECTO (el pañolero entrega sin solicitud previa)
+// =====================================================================
+
+/**
+ * El pañolero registra y entrega en un solo paso: el préstamo se guarda
+ * directamente como "retirado" y se descuenta el stock.
+ * Antes hay que llamar a validar_pedido().
+ */
+function registrar_prestamo_directo($pdo, $id_usuario, $id_herramienta, $cantidad, $fecha, $justificacion)
+{
+    try {
+        $pdo->beginTransaction();
+
+        // PASO 1: descontamos el stock SOLO si alcanza (igual que al aprobar).
+        // Se vuelve a controlar acá por si otro préstamo se llevó las
+        // unidades entre la validación y este momento.
+        $resta = $pdo->prepare(
+            "UPDATE herramientas
+                SET cantidad_disponible = cantidad_disponible - ?
+              WHERE id = ? AND activa = 1 AND cantidad_disponible >= ?"
+        );
+        $resta->execute([$cantidad, $id_herramienta, $cantidad]);
+
+        if ($resta->rowCount() === 0) {
+            $pdo->rollBack();
+            return ['ok' => false, 'mensaje' => 'Ya no hay stock suficiente de esa herramienta.'];
+        }
+
+        // PASO 2: guardamos el préstamo directamente como "retirado".
+        $insertar = $pdo->prepare(
+            "INSERT INTO prestamos
+                (id_usuario, id_herramienta, cantidad, fecha_pedido, fecha_devolucion_prevista, estado, justificacion)
+             VALUES (?, ?, ?, ?, ?, 'retirado', ?)"
+        );
+        $insertar->execute([$id_usuario, $id_herramienta, $cantidad, date('Y-m-d H:i:s'), $fecha, $justificacion]);
+        $id_prestamo = (int) $pdo->lastInsertId();
+
+        $pdo->commit();
+
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log('Error en préstamo directo: ' . $e->getMessage());
+        return ['ok' => false, 'mensaje' => 'No se pudo registrar el préstamo. Probá de nuevo.'];
+    }
+
+    // PASO 3 (Menú A): avisamos al alumno, DESPUÉS de guardar.
+    require_once __DIR__ . '/avisos.php';
+    try {
+        $aviso = avisar_retiro($pdo, $id_prestamo);
+    } catch (Exception $e) {
+        $aviso = ['ok' => false, 'error' => 'error inesperado'];
+    }
+
+    return [
+        'ok' => true,
+        'mensaje' => 'Préstamo registrado y entregado.' . ($aviso['ok']
+            ? ' Se le avisó por mail al alumno.'
+            : ' Atención: no se pudo enviar el mail al alumno.'),
+    ];
+}
+
+/**
+ * Cuántas unidades de una herramienta están prestadas ahora (retiradas).
+ * Se usa al editar la cantidad total de una herramienta.
+ */
+function unidades_en_uso($pdo, $id_herramienta)
+{
+    $consulta = $pdo->prepare(
+        "SELECT COALESCE(SUM(cantidad), 0) FROM prestamos
+          WHERE id_herramienta = ? AND estado = 'retirado'"
+    );
+    $consulta->execute([$id_herramienta]);
+    return (int) $consulta->fetchColumn();
 }

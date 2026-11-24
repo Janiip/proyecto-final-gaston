@@ -470,6 +470,98 @@ a:hover {
 }
 
 
+/* ---------- Tablero del Menú B (panel del pañolero) ---------- */
+
+/* Separación entre la tabla de solicitudes y el tablero */
+.tablero {
+    margin-top: 24px;
+}
+
+/* Título de la tarjeta a la izquierda y el selector a la derecha */
+.tarjeta-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.tarjeta-encabezado h2 {
+    margin: 0;
+}
+
+/* Selector "Este mes / Todo el año": dos links que parecen botones */
+.selector-periodo {
+    display: flex;
+    padding: 3px;
+    background: var(--fondo);
+    border-radius: 8px;
+}
+
+.selector-periodo a {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--texto-gris);
+}
+
+.selector-periodo a:hover {
+    text-decoration: none;
+    color: var(--titulo);
+}
+
+.selector-periodo a.activo {
+    background: var(--blanco);
+    color: var(--titulo);
+    box-shadow: 0 1px 4px rgba(36, 41, 90, 0.12);
+}
+
+/* Cada fila del ranking: puesto | nombre | barra | número */
+.ranking-fila {
+    display: grid;
+    grid-template-columns: 24px 170px 1fr 32px;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    font-size: 13px;
+}
+
+.ranking-puesto {
+    font-weight: 800;
+    color: var(--acero-texto);
+}
+
+.ranking-nombre {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;    /* si el nombre es muy largo, termina en "..." */
+}
+
+/* El "riel" gris de fondo de la barra */
+.ranking-barra {
+    height: 12px;
+    background: var(--menta-suave);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+/* La parte pintada: su ancho (width) lo calcula PHP en % */
+.ranking-relleno {
+    display: block;
+    height: 100%;
+    background: var(--acero);
+    border-radius: 999px;
+}
+
+.ranking-numero {
+    font-weight: 800;
+    text-align: right;
+    color: var(--titulo);
+}
+
+
 /* ==========================================================================
    7. TABLAS
    Encabezados en mayúsculas gris y separadores horizontales finos.
@@ -658,9 +750,37 @@ a:hover {
     border-color: var(--rojo-texto);
 }
 
+/* Casilla de verificación: la casilla y su texto en la misma línea */
+.campo-check label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.campo-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
 /* Campo más angosto (fechas, cantidad) */
 .campo-corto {
     max-width: 350px;
+}
+
+/* Zona de abajo de un formulario de edición ("Dar de baja", "Restablecer contraseña"):
+   separada con una línea para que no se apriete sin querer */
+.zona-baja {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--borde);
+}
+
+.zona-baja p {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--texto-gris);
 }
 
 /* Recuadro informativo celeste (arriba del formulario, accesos rápidos) */
@@ -800,5 +920,9 @@ a:hover {
 
     .metricas {
         grid-template-columns: 1fr;     /* las tarjetas una abajo de la otra */
+    }
+
+    .ranking-fila {
+        grid-template-columns: 20px 110px 1fr 28px;   /* nombre más angosto */
     }
 }

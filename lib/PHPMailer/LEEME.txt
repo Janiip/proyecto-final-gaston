@@ -1,0 +1,16 @@
+PHPMailer (librería para mandar mails por SMTP)
+================================================
+
+Esta carpeta tiene que quedar así:
+
+    lib/PHPMailer/src/Exception.php
+    lib/PHPMailer/src/PHPMailer.php
+    lib/PHPMailer/src/SMTP.php
+
+Cómo conseguirlos:
+1. Entrá a https://github.com/PHPMailer/PHPMailer/releases
+2. Descargá el "Source code (zip)" de la última versión 6.x.
+3. Del zip, copiá la carpeta "src" completa adentro de lib/PHPMailer/.
+
+Solo hace falta para CORREO_MODO=smtp. Con CORREO_MODO=archivo
+el sistema funciona sin PHPMailer.

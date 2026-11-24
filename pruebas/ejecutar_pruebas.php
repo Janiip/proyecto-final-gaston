@@ -14,6 +14,9 @@
 require_once __DIR__ . '/../config/cargar_env.php';
 require_once __DIR__ . '/../config/validaciones.php';
 require_once __DIR__ . '/../config/reglas_prestamos.php';
+require_once __DIR__ . '/../config/formato.php';
+require_once __DIR__ . '/../config/reportes.php';
+require_once __DIR__ . '/../config/correo.php';
 
 // Las pruebas de horario usan la hora de Argentina, igual que el sistema.
 date_default_timezone_set('America/Argentina/Buenos_Aires');
@@ -102,6 +105,50 @@ comprobar('Retirado para ayer, a las 9:00: vencido',       esta_vencido('retirad
 comprobar('Retirado para mañana, a las 18:00: no vencido', esta_vencido('retirado', '2026-11-25', $martes(18, 0)), false);
 comprobar('Una solicitud vieja no vence (no la retiró)',   esta_vencido('solicitado', '2026-11-01', $martes(9, 0)), false);
 comprobar('Un préstamo devuelto no vence',                 esta_vencido('devuelto', '2026-11-01', $martes(9, 0)), false);
+
+// ---------------------------------------------------------
+// Pruebas del Menú B (reportes): período "este mes" y "todo el año"
+// ---------------------------------------------------------
+echo "\nReportes (Menú B)\n";
+comprobar('"Este mes" en noviembre va del 1/11 al 1/12',  rango_periodo('mes', $martes(10, 0)), ['2026-11-01', '2026-12-01']);
+comprobar('"Este mes" en diciembre termina el 1/1',       rango_periodo('mes', mktime(10, 0, 0, 12, 15, 2026)), ['2026-12-01', '2027-01-01']);
+comprobar('"Todo el año" va del 1/1 al 1/1 siguiente',    rango_periodo('anio', $martes(10, 0)), ['2026-01-01', '2027-01-01']);
+
+// ---------------------------------------------------------
+// Pruebas del Menú A (correo)
+// ---------------------------------------------------------
+echo "\nCorreo (Menú A)\n";
+comprobar('Oculta el correo en pantalla',               ocultar_correo('daisy@escuela.com'), 'da***@escuela.com');
+comprobar('Un correo inválido no se intenta mandar',    enviar_correo('no-es-un-correo', 'X', 'Prueba', '<p>Hola</p>')['ok'], false);
+comprobar('La versión de texto saca las etiquetas HTML', html_a_texto('<p>Hola <b>Ana</b></p>'), 'Hola Ana');
+
+// Modo archivo: el mail se guarda en correos-enviados/ en vez de mandarse.
+$_ENV['CORREO_MODO'] = 'archivo';
+$antes = glob(__DIR__ . '/../correos-enviados/*.html') ?: [];
+$envio = enviar_correo('prueba@escuela.com', 'Prueba', 'Mail de prueba', plantilla_correo('Hola', '<p>Prueba</p>'));
+$despues = glob(__DIR__ . '/../correos-enviados/*.html') ?: [];
+comprobar('En modo archivo, el mail se guarda como .html', $envio['ok'] && count($despues) === count($antes) + 1, true);
+foreach (array_diff($despues, $antes) as $archivo) {
+    unlink($archivo); // borramos el mail de prueba
+}
+
+// ---------------------------------------------------------
+// Pruebas de los formularios del pañolero (usuarios y herramientas)
+// ---------------------------------------------------------
+echo "\nAlta de alumnos y herramientas\n";
+comprobar('DNI de 8 números es válido',                    es_dni_valido('45111222'), true);
+comprobar('DNI con puntos no es válido',                   es_dni_valido('45.111.222'), false);
+comprobar('DNI de 5 números no es válido',                 es_dni_valido('12345'), false);
+comprobar('Correo con arroba y dominio es válido',         es_email_valido('ana@escuela.com'), true);
+comprobar('Correo sin dominio no es válido',               es_email_valido('ana@'), false);
+comprobar('El 31/02 no es una fecha válida',               es_fecha_valida('2026-02-31'), false);
+comprobar('El 24/11/2026 es una fecha válida',             es_fecha_valida('2026-11-24'), true);
+comprobar('Una herramienta nueva necesita 1 o más',        error_cantidad_total(0) !== null, true);
+comprobar('Total 5 sin nada prestado está bien',           error_cantidad_total(5, 0), null);
+comprobar('Total 2 con 3 prestadas no se permite',         error_cantidad_total(2, 3) !== null, true);
+comprobar('Total 6 con 2 prestadas deja 4 disponibles',    calcular_disponible(6, 2), 4);
+comprobar('Total 3 con 3 prestadas deja 0 disponibles',    calcular_disponible(3, 3), 0);
+comprobar('Las disponibles nunca son negativas',           calcular_disponible(2, 5), 0);
 
 // ---------------------------------------------------------
 // Resumen
