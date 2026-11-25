@@ -52,7 +52,13 @@ require __DIR__ . '/inicio_pagina.php';
         <h1>Gestión de préstamos</h1>
         <p>Administrá solicitudes, retiros y devoluciones.</p>
     </div>
-    <a href="registrar_prestamo.php" class="boton boton-principal">+ Registrar préstamo</a>
+    <div class="acciones">
+    <!-- Menú A: corre los avisos por mail en el momento (además de la tarea automática) -->
+        <form action="../login-acciones/enviar_avisos.php" method="POST">
+            <button class="boton boton-secundario">Enviar avisos ahora</button>
+        </form>
+        <a href="registrar_prestamo.php" class="boton boton-principal">+ Registrar préstamo</a>
+</div>
 </div>
 
 <?php if ($error): ?><div class="mensaje mensaje-error"><?= e($error) ?></div><?php endif; ?>

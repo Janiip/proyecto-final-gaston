@@ -15,8 +15,8 @@
  */
 
 define('HORA_APERTURA', '07:20');
-define('HORA_CIERRE', '17:30');
-define('HORA_ALERTA_CIERRE', '16:30'); // una hora antes del cierre
+define('HORA_CIERRE', '21:50');
+define('HORA_ALERTA_CIERRE', '20:05'); // una hora antes del cierre
 
 /**
  * Devuelve el momento a usar: el que nos pasaron o el actual.
