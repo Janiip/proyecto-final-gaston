@@ -43,8 +43,8 @@ Hoy los préstamos se anotan en un cuaderno. Las anotaciones se pierden, no se s
 | Stock con transacciones, vencimiento a las 17:30 y bloqueo por deuda | Hecho |
 | Horario con justificación y alerta de las 16:30 | Hecho |
 | Gestión de herramientas y usuarios | Hecho |
-| Avisos por correo (Menú A) en modo archivo, más tarea automática | Hecho |
-| Envío real por Gmail | Listo en el código; falta instalar PHPMailer y configurar la cuenta (ver *Avisos por correo*) |
+| Avisos por correo (Menú A), más tarea automática | Hecho |
+| Envío real por Gmail con PHPMailer | Hecho y probado: llegan el código de verificación y el aviso de cierre |
 | Tablero de reportes (Menú B) | Hecho |
 | Búsqueda del historial por herramienta | Pendiente (el alumno ya ve su historial completo en "Mis préstamos") |
 | Pruebas automatizadas | 48 pruebas (`php pruebas/ejecutar_pruebas.php`) |
@@ -165,9 +165,11 @@ git clone <url-del-repositorio> panol_escuela
 | `CORREO_MODO` | `archivo` para probar (los mails se guardan en `correos-enviados/`) o `smtp` para mandarlos de verdad |
 | `SMTP_...` | Solo para `CORREO_MODO=smtp`: el Gmail del pañol y su contraseña de aplicación |
 | `ZONA_HORARIA` | `America/Argentina/Buenos_Aires` |
-| `APP_URL` | `http://localhost/panol_escuela` (se usa como link en los mails) |
+| `APP_URL` | La dirección del sistema, con el **mismo nombre de carpeta** que tiene el proyecto en `htdocs` (por ejemplo `http://localhost/panol_escuela`). Es el link del botón de los mails: si el nombre no coincide, da error 404 |
 
 > El archivo `.env` tiene claves reales, por eso **nunca se sube a Git** (está en `.gitignore`).
+>
+> Cada línea lleva solo `NOMBRE=valor`. No escribas notas al final de la línea: el sistema las toma como parte del valor. Si querés dejar una nota, ponela en una línea aparte que empiece con `#`.
 
 ### Paso 4: abrir el sistema
 
@@ -189,8 +191,12 @@ Con `CORREO_MODO=archivo`, cada mail se guarda como página en la carpeta `corre
 ### Mandar mails de verdad (Gmail)
 
 1. Descargá PHPMailer y copiá su carpeta `src` dentro de `lib/PHPMailer/` (los pasos están en `lib/PHPMailer/LEEME.txt`).
-2. En la cuenta de Gmail del pañol, activá la verificación en dos pasos y creá una **contraseña de aplicación** (Cuenta de Google → Seguridad → Contraseñas de aplicaciones).
-3. En el `.env`, poné `CORREO_MODO=smtp`, en `SMTP_USUARIO` el correo del pañol y en `SMTP_CLAVE` la contraseña de aplicación, sin espacios.
+2. En la cuenta de Gmail del pañol (tiene que ser un Gmail común, no una cuenta de la escuela), activá la **verificación en 2 pasos** en `https://myaccount.google.com/security`.
+3. Creá una **contraseña de aplicación** en `https://myaccount.google.com/apppasswords`. Google te da una clave de 16 letras que se muestra una sola vez.
+4. En el `.env`, poné `CORREO_MODO=smtp`, en `SMTP_USUARIO` el correo del pañol y en `SMTP_CLAVE` la clave de 16 letras, toda junta y sin espacios.
+5. Revisá que `APP_URL` tenga el nombre de la carpeta del proyecto, así el botón del mail abre el sistema.
+
+El botón de los mails apunta a `localhost`, así que abre el sistema solo en la compu donde está XAMPP. Si el sistema se publicara en un servidor, alcanza con cambiar `APP_URL`.
 
 Si un mail falla, el sistema sigue funcionando: el préstamo se guarda igual y el pañolero ve un aviso.
 
@@ -217,10 +223,10 @@ php pruebas/ejecutar_pruebas.php
 En XAMPP para Windows, si `php` no se reconoce como comando: `C:\xampp\php\php.exe pruebas/ejecutar_pruebas.php`. Tienen que pasar las 48 pruebas: login, horario, vencimiento, reportes, correo y validaciones de los formularios.
 
 **Recorrido en XAMPP:**
-1. Entrar como alumna con 1234 → verificar el código (en `correos-enviados/`) → elegir la contraseña nueva.
+1. Entrar como alumna con 1234 → verificar el código (llega por mail con `CORREO_MODO=smtp`, o está en `correos-enviados/` con `archivo`) → elegir la contraseña nueva.
 2. Pedir una herramienta → entrar como pañolero → aprobarla y ver que baja el stock → registrar la devolución y ver que vuelve.
 3. Agregar una herramienta, dar de alta un alumno y registrar un préstamo directo.
-4. Para probar la alerta de cierre a otra hora, cambiar por un momento `HORA_ALERTA_CIERRE` en `config/horario.php`, y después volver a poner `'16:30'`.
+4. Para probar la alerta de cierre a otra hora, cambiar por un momento en `config/horario.php` **las dos** horas: `HORA_ALERTA_CIERRE` un poco antes de la hora actual y `HORA_CIERRE` un rato después (el aviso solo sale entre esas dos horas, de lunes a viernes). Con una herramienta retirada, tocar **Enviar avisos ahora** en el panel del pañolero. El aviso sale una vez por día; para repetir la prueba, ejecutar en phpMyAdmin `UPDATE prestamos SET ultimo_aviso_cierre = NULL WHERE estado = 'retirado';`. Al terminar, volver a poner `'16:30'` y `'17:30'`.
 
 ## Seguridad
 

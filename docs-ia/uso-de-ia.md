@@ -58,4 +58,4 @@ Le pedimos pruebas automatizadas (`pruebas/ejecutar_pruebas.php`, 48 pruebas) y 
 ## Límites que tuvimos en cuenta
 
 - La IA no tenía acceso a nuestro XAMPP: las pruebas de punta a punta las hizo en una base de prueba, y las partes propias de MySQL (como las transacciones) las confirmamos en nuestra compu.
-- El envío real de mails por Gmail requiere instalar PHPMailer y configurar la cuenta del pañol; durante el desarrollo usamos el modo archivo.
+- Durante el desarrollo usamos el modo archivo. Después instalamos PHPMailer, configuramos un Gmail del pañol con contraseña de aplicación y probamos en nuestra compu que llegan el código de verificación y el aviso de cierre. Cuando no llegaban, la IA nos ayudó a encontrar el error: habíamos dejado notas al final de las líneas del `.env`, y el nombre de carpeta de `APP_URL` no coincidía con el nuestro.
